@@ -24,12 +24,13 @@
 					<!--<button type="button" shiro:hasPermission="/resources/add" 
 						@click="test" class="btn btn-info" style="float: right; margin-right: 1px;">新增</button>-->
 
-					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">商品选择:</span>
-					<Input placeholder="请输入..." style="width: 200px;padding:0 12px" size="small"></Input>
-					<Button type="info" size="small">查询</Button>
-					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">商品编号:</span>
-					<Input placeholder="请输入..." style="width: 200px;padding:0 12px" size="small"></Input>
-					<Button type="success" size="small" @click="btn_addShop">添加门店</Button>
+					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">时间范围:</span>
+					<DatePicker v-model="tableInfo.arg.xTime" size="small" type="daterange" placement="bottom-end" placeholder="Select date" style="width: 200px"></DatePicker>
+					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">单类型:</span>
+					<Select v-model="tableInfo.arg.xType" style="width: 200px;padding:0 12px" size="small" clearable>
+				        <Option v-for="item in orderTypeList" :value="item.value">{{ item.label }}</Option>
+				    </Select>
+					<Button type="info" size="small" @click="btn_query">查询</Button>
 				</div>
 			</div>
 			<div class="table-box">
@@ -45,193 +46,11 @@
 			</div>
 			</div>
 		</div>
-		<Modal width='800' v-model="modal_edit" title="门店修改">
-			<Form ref="arg_edit" :model="arg_edit" :label-width="90">
-				<Row>
-					<Col span="12">
-					<Form-item label="门店名称" prop="storeName">
-						<Input v-model="arg_edit.storeName" placeholder="请输入登录密码"></Input>
-					</Form-item>
-					<Form-item label="联系人" prop="contacts">
-						<Input v-model="arg_edit.contacts" placeholder="请输入公司名称或者管理员名称"></Input>
-					</Form-item>
-					<Form-item label="联系方式" prop="storePhone">
-						<Input v-model="arg_edit.storePhone" placeholder="请输入公司地址"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="storeTelephone">
-						<Input v-model="arg_edit.storeTelephone" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="门店分类ID" prop="regionId">
-						<Input v-model="arg_edit.regionId" placeholder="请输入手机号"></Input>
-					</Form-item>
-
-					<Form-item label="门店负责人" prop="storeDirector">
-						<Input v-model="arg_edit.storeDirector" placeholder="请输入登录密码"></Input>
-					</Form-item>
-					<Form-item label="计划员工人数" prop="staffNumber">
-						<Input v-model="arg_edit.staffNumber" placeholder="请输入公司名称或者管理员名称"></Input>
-					</Form-item>
-					<Form-item label="门店合作分类ID" prop="storeClassifyId" :label-width="100">
-						<Input v-model="arg_edit.storeClassifyId" placeholder="请输入公司地址"></Input>
-					</Form-item>
-					</Col>
-					
-					<Col span="12">
-					<Form-item label="经纬度" prop="longitudeLatitude">
-						<Input v-model="arg_edit.longitudeLatitude" placeholder="请输入手机号"></Input>
-					</Form-item>
-
-					<Form-item label="门店状态" prop="storeStatus">
-						<Input v-model="arg_edit.storeStatus" placeholder="请输入登录密码"></Input>
-					</Form-item>
-					<Form-item label="品牌数量" prop="brandNumber">
-						<Input v-model="arg_edit.brandNumber" placeholder="请输入公司名称或者管理员名称"></Input>
-					</Form-item>
-					<Form-item label="门店库存报警天数上限" :label-width="140" prop="repertoryAlarmUpperlimit">
-						<Input v-model="arg_edit.repertoryAlarmUpperlimit" placeholder="请输入公司地址"></Input>
-					</Form-item>
-					<Form-item label="门店库存报警天数下限"  :label-width="140" prop="repertoryAlarmLowlimit">
-						<Input v-model="arg_edit.repertoryAlarmLowlimit" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<!--<Form-item label="盈利模式" prop="profitPattern">
-						<Input v-model="arg_edit.profitPattern" placeholder="请输入手机号"></Input>
-					</Form-item>-->
-					
-					<Form-item label="合作模式" prop="profitType">
-						<!--<Input v-model="arg_edit.profitType" placeholder="请输入手机号"></Input>-->
-						<Select v-model="arg_edit.profitType">
-					        <Option v-for="item in profitTypeList" :value="item.value">{{ item.label }}</Option>
-					    </Select>
-					</Form-item>
-					<Form-item label="返利点" prop="rebate">
-						<Input v-model="arg_edit.rebate" placeholder="请输入手机号"></Input>
-					</Form-item>
-					<Form-item label="门店地址" prop="storeAddress">
-						<Input v-model="arg_edit.storeAddress" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<!--<Form-item label="品牌ids" prop="brandIds">
-						<Input v-model="arg_edit.brandIds" placeholder="请输入手机号"></Input>
-					</Form-item>-->
-					</Col>
-				</Row>
-				
-			</Form>
-			<div style="text-align: center;font: 16px/40px '';">选择品牌</div>
-			<Select
-	            v-model="arg_brandList"
-	            multiple
-	            filterable
-	            remote
-	            placeholder="请输入搜索关键字..."
-	            :remote-method="remoteMethod2"
-	            :loading="loading2">
-	            <Option v-for="option in brandOptions" :value="option.value" :key="option.label">{{option.label}}</Option>
-	        </Select>
-			<!--<Checkbox-group v-model="selectBrandGroup" @on-change="brandGroupChange">
-				        <Checkbox :label="allBrandGroup[index]" v-for="(item,index) in allBrandGroup"></Checkbox>
-			</Checkbox-group>-->
+		<Modal width='800' v-model="modal_detail" title="查看详情">
+			<Table size="small" border :columns="dataDetail_columns" :data="dataDetail_table"></Table>
+			<!--<Page :total="modalTotal" @on-change="modalPageCange" style="text-align: center;margin: 20px;"></Page>-->
 			<div slot="footer" style="text-align: center;">
-				<Button type="success" size='large' @click="up_edit">确定</Button>
-				<Button type="info" size='large' @click="modal_edit=false">取消</Button>
-			</div>
-		</Modal>
-				<Modal width='800' v-model="modal_addShop" title="添加门店">
-			<Form ref="arg_add" :model="arg_add" :label-width="90">
-				<Row>
-					<Col span="12">
-					<Form-item label="门店名称" prop="storeName">
-						<Input v-model="arg_add.storeName" placeholder="请输入门店名称"></Input>
-					</Form-item>
-					<Form-item label="联系人" prop="contacts">
-						<Input v-model="arg_add.contacts" placeholder="请输入联系人"></Input>
-					</Form-item>
-					<Form-item label="联系方式" prop="storePhone">
-						<Input v-model="arg_add.storePhone" placeholder="请输入联系方式"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="storeTelephone">
-						<Input v-model="arg_add.storeTelephone" placeholder="请输入固定电话"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="regionOneId">
-						<Input v-model="arg_add.regionOneId" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="regionTwoId">
-						<Input v-model="arg_add.regionTwoId" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="regionThreeId">
-						<Input v-model="arg_add.regionThreeId" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="regionFourId">
-						<Input v-model="arg_add.regionFourId" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="固定电话" prop="regionFiveId">
-						<Input v-model="arg_add.regionFiveId" placeholder="请输入邮箱"></Input>
-					</Form-item>
-					<Form-item label="门店负责人" prop="storeDirector">
-						<Input v-model="arg_add.storeDirector" placeholder="请输入门店负责人"></Input>
-					</Form-item>
-					</Col>
-					
-					<Col span="12">
-					<Form-item label="门店地址" prop="storeAddress" :label-width="100">
-						<Input v-model="arg_add.storeAddress" placeholder="请输入门店地址"></Input>
-					</Form-item>
-					<Form-item label="经纬度" prop="longitudeLatitude" :label-width="100">
-						<Input v-model="arg_add.longitudeLatitude" placeholder="请输入经纬度"></Input>
-					</Form-item>
-					<Form-item label="门店状态" prop="storeStatus" :label-width="100">
-						<Input v-model="arg_add.storeStatus" placeholder="请输入门店状态"></Input>
-					</Form-item>
-					<Form-item label="品牌数量" prop="brandNumber" :label-width="100">
-						<Input v-model="arg_add.brandNumber" placeholder="请输入品牌数量"></Input>
-					</Form-item>
-					<Form-item label="门店库存报警天数上限" prop="repertoryAlarmUpperlimit" :label-width="150">
-						<Input v-model="arg_add.repertoryAlarmUpperlimit" placeholder="请输入门店库存报警天数上限"></Input>
-					</Form-item>
-					
-					<Form-item label="门店库存报警天数下限" prop="repertoryAlarmLowlimit":label-width="150">
-						<Input v-model="arg_edit.repertoryAlarmLowlimit" placeholder="请输入门店库存报警天数下限"></Input>
-					</Form-item>
-					<Form-item label="计划员工人数" prop="staffNumber">
-						<Input v-model="arg_add.staffNumber" placeholder="请输入计划员工人数"></Input>
-					</Form-item>
-					<!--<Form-item label="盈利模式" prop="profitPattern">
-						<Input v-model="arg_edit.profitPattern" placeholder="请输入盈利模式"></Input>
-					</Form-item>-->
-						<Form-item label="合作模式" prop="profitType">
-						<Select v-model="arg_edit.profitType">
-					        <Option v-for="item in profitTypeList" :value="item.value">{{ item.label }}</Option>
-					    </Select>
-					</Form-item>
-					<Form-item label="返利点" prop="rebate">
-						<Input v-model="arg_edit.rebate" placeholder="请输入返利点"></Input>
-					</Form-item>
-					<!--<Form-item label="品牌ids" prop="brandIds">
-						<Input v-model="arg_edit.brandIds" placeholder="请输入手机号"></Input>
-					</Form-item>-->
-						<Form-item label="门店合作分类ID" prop="storeClassifyId" :label-width="100">
-						<Input v-model="arg_add.storeClassifyId" placeholder="请输入门店合作分类ID"></Input>
-					</Form-item>
-					</Col>
-				</Row>
-				
-			</Form>
-			<div style="text-align: center;font: 16px/40px '';">选择品牌</div>
-			<Select
-	            v-model="arg_brandList"
-	            multiple
-	            filterable
-	            remote
-	            placeholder="请输入搜索关键字..."
-	            :remote-method="remoteMethod2"
-	            :loading="loading2">
-	            <Option v-for="option in brandOptions" :value="option.value" :key="option.label">{{option.label}}</Option>
-	        </Select>
-			<!--<Checkbox-group v-model="selectBrandGroup" @on-change="brandGroupChange">
-				        <Checkbox :label="allBrandGroup[index]" v-for="(item,index) in allBrandGroup"></Checkbox>
-			</Checkbox-group>-->
-			<div slot="footer" style="text-align: center;">
-				<Button type="success" size='large' @click="up_add">确定</Button>
-				<Button type="info" size='large' @click="modal_addShop=false">取消</Button>
+				&nbsp;
 			</div>
 		</Modal>
 	</div>
@@ -239,23 +58,116 @@
 <!--宽高在这里写-->
 <script>
 	import moduleTree from '../components/module_tree'
-	import moduleTable from '../components/module_table'
+	import bus from '../assets/bus.js'
 	export default {
 		components: {
 			moduleTree,
-			moduleTable,
 		},
 		data() {
 			return {
-				modal_addShop:false,
 				data_table:[],
             	total:null,
-				arg_brandList: [],
-                loading2: false,
-                brandOptions: [],
-				data_allBrand:[],
-				allBrandGroup:[],
-				selectBrandGroup:[],
+            	modalTotal:null,
+            	modal_detail:false,
+            	dataDetail_table:[],
+			    dataDetail_columns:[
+			    		{
+							title: '商品id',
+							key: 'goodsId',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '盘点前数量',
+							key: 'beforeNumber',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '盘点数量',
+							key: 'checkNumber',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '盘盈成本金额',
+							key: 'profitCostMoney',
+							align: 'center',
+							width:120
+						},
+						{
+							title: '盘盈售价金额',
+							key: 'profitSaleMoney',
+							align: 'center',
+							width:120
+						},
+						{
+							title: '盘亏售价金额',
+							key: 'lossSaleMoney',
+							align: 'center',
+							width:120
+						},
+						{
+							title: '盘亏成本金额',
+							key: 'lossCostMoney',
+							align: 'center',
+							width:120
+						},
+						{
+							title: '盘点状态',
+							key: 'state',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '品牌名称',
+							key: 'brandName',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '商品名称',
+							key: 'goodsName',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '商品编号',
+							key: 'goodsNumber',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '型号',
+							key: 'modelNumber',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '规格',
+							key: 'spec',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '单位',
+							key: 'unit',
+							align: 'center',
+							width:100
+						},
+						{
+							title: '盘盈盘亏数量',
+							key: 'changeNumber',
+							align: 'center',
+							width:120
+						},
+						{
+							title: '盈亏金额',
+							key: 'changeMoney',
+							align: 'center',
+							width:100
+						},
+					],
 				arg_edit: {
 					"storeId": "1",
 					"storeName": "2",
@@ -287,6 +199,15 @@
                         label: '联营'
                     }
                 ],
+                orderTypeList: [
+                    {
+                        value: 0,
+                        label: '报溢单'
+                    },{
+                        value: 1,
+                        label: '报损单'
+                    }
+                ],
 				modal_edit: false,
 				treeInfo: {
 					url: window.http + '/store/region_classfy?userId=1',
@@ -299,10 +220,12 @@
 					arg:{
 						'storeId':17,
 						'checkOrder':null,
-						'checkOrder':null,
+						'beginDate':null,
 						'endDate':null,
 						'containProfitOrder':null,
-						'containLossOrder':null
+						'containLossOrder':null,
+						"xTime":[],
+						"xType":null
 					},
 					columns: [{
 							title: '盘点单据',
@@ -417,25 +340,11 @@
 										},
 										on: {
 											click: () => {
-												this.bt_edit(params.row)
-												this.arg_edit = params.row
+												
+												this.show_detail(params.row.checkId)
 											}
 										}
-									}, '编辑'),
-									h('Button', {
-										props: {
-											type: 'error',
-											size: 'small'
-										},
-										style: {
-											marginRight: '5px'
-										},
-										on: {
-											click: () => {
-												this.up_delete(params.row.storeId)
-											}
-										}
-									}, '删除')
+									}, '查看')
 								]);
 							}
 						}
@@ -469,6 +378,26 @@
 			}
 		},
 		methods: {
+			show_detail(id){
+				this.modal_detail = true
+				this.$http({
+					method: 'post',
+					url: window.http + "/inventory/store_inventory_check_order_show",
+					data:{
+					    "checkId":id,
+					    "goodsId":null,
+					    "brandId":null,
+					    "state":null,
+					}
+				}).then((res) => {
+					if(res.status==200){
+						console.log(res.data.data)
+						this.dataDetail_table = res.data.data
+						this.modalTotal = res.data.recordsTotal
+					}
+					
+				});
+			},
 			isEmpty(arg,type){
 					if(type=='obj'){
 						for(var item in arg){
@@ -485,134 +414,37 @@
 						}
 					}
 			},
-			up_add(){
-				console.log('arg_brandList',this.arg_brandList)
-				let allBrandId = ''
-				for(let i=0;i<this.arg_brandList.length;i++){
-					allBrandId += this.arg_brandList[i]+','
+			btn_query(){
+				if(this.tableInfo.arg.xTime[0]){
+					this.tableInfo.arg.beginDate = bus.time(this.tableInfo.arg.xTime[0],'no:')
+					this.tableInfo.arg.endDate = bus.time(this.tableInfo.arg.xTime[1],'no:')
+				}else{
+					this.tableInfo.arg.beginDate = null
+					this.tableInfo.arg.endDate =  null
 				}
-				this.arg_add.brandIds = allBrandId.substring(0,allBrandId.length-1)
-				console.log('arg_brandList',this.arg_brandList,this.arg_add.brandIds)
-				console.log('this.arg_add,',this.arg_add)
-				if(!this.isEmpty(this.arg_add,'obj')){
-					console.log('adsfaf')
-					this.$Message.info("请检查输入是否完整！")
-					return;
+				if(this.tableInfo.arg.xType==0){
+					this.tableInfo.arg.containProfitOrder = 1
+					this.tableInfo.arg.containLossOrder = 0
+				}else if(this.tableInfo.arg.xType==1){
+					this.tableInfo.arg.containLossOrder = 1
+					this.tableInfo.arg.containProfitOrder = 0
+				}else{
+					this.tableInfo.arg.containLossOrder = 0
+					this.tableInfo.arg.containProfitOrder = 0
 				}
-//				this.$http({
-//					method: 'post',
-//					url:window.http+ '/store/update',
-//					data:this.arg_add,
-//				}).then((res)=> {
-//					console.log(res)
-//						this.$Message.info(res.data.msg)
-//				});
-			},
-			btn_addShop(){
-				this.modal_addShop = true
-			},
-			up_delete(id){
-				 this.$http({
-					method: 'post',
-					url:window.http+ '/store/update',
-					data:{
-						"storeStatus":2,
-						"storeId":id,
-						"type":2
-					}
-				 }).then((res)=> {
-					if(res.status==200){
-						console.log(res,'res')
-						this.$Message.info(res.data.msg)
-						this.down_table()
-					}
-				});
-			},
-			 remoteMethod2 (query) {
-                if (query !== '') {
-                    this.loading2 = true;
-                        
-//                      const list = this.list.map(item => {
-//                          return {
-//                              value: item,
-//                              label: '1item'
-//                          };
-//                      });
-//                      this.brandOptions = list.filter(item => item.label.toLowerCase().indexOf(query.toLowerCase()) > -1);
-		                this.$http({
-							method: 'post',
-							url:window.http + "/brand?start=1"+'&brandName=' + query,
-						}).then((res)=> {
-							
-							if(res.status==200&&res.data.data.length){
-								console.log(res,'res')
-								this.loading2 = false;
-								const brandlist = res.data.data.map(item => {
-		                            return {
-		                                value: item.brandId,
-		                                label: item.brandName,
-		                            };
-								})
-								 this.brandOptions = brandlist
-		                        console.log(this.brandOptions)
-							}
-						});
-                            
-                } else {
-                    this.brandOptions = [];
-                }
-            },
-			up_edit(){
-//				let allBrandId = ''
-//				for(let i=0;i<this.data_allBrand.length;i++){
-//					for(let j=0;j<this.selectBrandGroup.length;j++)
-//					if(this.data_allBrand[i].brandName ==this.selectBrandGroup[j]){
-//						allBrandId += this.data_allBrand[i].brandId+','
-//					}
-//				}
-//				this.arg_edit.brandIds = allBrandId.substring(0,allBrandId.length-1)
-				console.log('arg_brandList',this.arg_brandList)
-				let allBrandId = ''
-				for(let i=0;i<this.arg_brandList.length;i++){
-					allBrandId += this.arg_brandList[i]+','
-				}
-				this.arg_edit.brandIds = allBrandId.substring(0,allBrandId.length-1)
-				console.log('arg_brandList',this.arg_brandList,this.arg_edit.brandIds)
-				console.log('this.arg_edit,',this.arg_edit)
-//				this.$http({
-//					method: 'post',
-//					url:window.http+ '/store/update',
-//					data:this.arg_edit,
-//				}).then((res)=> {
-//					console.log(res)
-//						this.$Message.info(res.data.msg)
-//				});
-			},
-			brandGroupChange(){
-				console.log(this.selectBrandGroup)
-			},
-			bt_edit() {
-				this.modal_edit = true
-				this.$http({
-					method: 'get',
-					url:window.http+ '/brand',
-				}).then((res)=> {
-					console.log(res)
-					this.data_allBrand = res.data.data
-					if(res.status==200){
-						this.allBrandGroup = []
-						for(let i=0;i<res.data.data.length;i++){
-							this.allBrandGroup.push(res.data.data[i].brandName)
-						}
-						
-					}
-				});
+				this.down_table()
+				
 			},
 			pageCange(val){
 				console.log(val)
 				this.tableInfo.url = window.http + '/store?start='+val+'&length=10'
 				this.down_table()
         		
+        	},
+        	modalPageCange(val){
+        		console.log(val)
+        		this.modal_start = val
+        		this.show_detail()
         	},
 			down_table(){
 				this.$http({
