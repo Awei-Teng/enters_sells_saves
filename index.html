@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html style="height: 100%;" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <style type="text/css">
+    	#app{
+    		height: 100%;
+    	}
+    </style>
+    <title>进销存</title>
+  </head>
+  <body style="height: 100%;background: #eee;">
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.2&key=e2f2935eb3c388bddd65ef961f6408e9"></script>
+<script>
+	
+		var log = function(val){
+								 console.log(val)
+							} 
+							
+		function init() {
+		if(document.documentElement.clientWidth<=1470){
+			document.getElementsByTagName('html')[0].style.width = "1470px"
+		}else{
+			document.getElementsByTagName('html')[0].style.width = "auto"
+		}
+		if(document.documentElement.clientHeight<=890){
+			document.getElementsByTagName('html')[0].style.height = "890px"
+		}else{
+			document.getElementsByTagName('html')[0].style.height = "100%"
+		}	
+	}
+	init();
+	window.addEventListener('orientationchange',init);
+	window.addEventListener('resize',init);
+</script>
