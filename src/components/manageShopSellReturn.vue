@@ -297,6 +297,7 @@
 			down_table(){
 				if(!this.tableInfo.arg.storeId){
 					this.$Message.info('请在左侧选择门店！')
+					return;
 				}
 				this.$http({
 					method: 'post',

@@ -24,12 +24,15 @@
 					<!--<button type="button" shiro:hasPermission="/resources/add" 
 						@click="test" class="btn btn-info" style="float: right; margin-right: 1px;">新增</button>-->
 
-					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">商品选择:</span>
-					<Input placeholder="请输入..." style="width: 200px;padding:0 12px" size="small"></Input>
-					<Button type="info" size="small">查询</Button>
-					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">商品编号:</span>
-					<Input placeholder="请输入..." style="width: 200px;padding:0 12px" size="small"></Input>
-					<Button type="success" size="small" shiro:hasPermission="/users/add"  @click="show_groupSend">群发</Button>
+					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">门店:</span>
+					<Cascader :data="shopClassifyList" v-model="tableInfo.arg.xstoreId" @on-change="change_storeId" style="width: 300px;padding:0 12px;display: inline-block;" size="small"></Cascader>		
+					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">品牌:</span>
+				    <Select v-model="tableInfo.arg.xbrandId" style="width: 200px;padding:0 12px" size="small" clearable>
+				        <Option v-for="item in brandIdList" :value="item.brandId">{{ item.brandName }}</Option>
+				    </Select>
+				    <span style="font:12px/32px 'microsoft yahei';padding-left:20px">商品名称:</span>
+				    <Input placeholder="请输入群发内容..." v-model="tableInfo.arg.goodsName" style="width: 200px;padding:0 12px" size="small"></Input>
+			    	<Button type="info" size="small" @click="btn_query">查询</Button>
 				</div>
 			</div>
 			<div class="serach" style="margin-top:12px;">
@@ -39,10 +42,10 @@
 					<span>门店查询列表</span>	
 				</div>
 				<div class="serach_main">
-					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">会员数量:</span>
-					<span v-text="memberCount" style="color: red;padding-left: 20px;"></span>
-					<span style="font:12px/32px 'microsoft yahei';padding-left:40px">会员消费总金额:</span>			
-					<span v-text="memberSum" style="color: red;padding-left: 20px;"></span>
+					<span style="font:12px/32px 'microsoft yahei';padding-left:20px">库存量:</span>
+					<span v-text="totalNumber" style="color: red;padding-left: 20px;"></span>
+					<span style="font:12px/32px 'microsoft yahei';padding-left:40px">库存成本:</span>			
+					<span v-text="totalCost" style="color: red;padding-left: 20px;"></span>
 				</div>
 			</div>	
 			<div class="table-box">
@@ -76,9 +79,12 @@
 		},
 		data() {
 			return {
-				memberSum:"",
-				memberCount:"",
+				totalNumber:"",
+				totalCost:"",
 				data_table:[],
+				shopClassifyList:[],
+				brandIdList:[],
+				goodsIdList:[],
             	total:null,
 				modal_groupSend:false,
 				arg_groupSend:{
@@ -88,60 +94,106 @@
 				},
 				treeInfo: {
 					url: window.http + '/store/region_classfy?userId=1',
-					name: "商品管理"
 				},
 				tableInfo: {
 					name: '商品管理',
 					search: 0,
-					url: window.http + '/member',
+					url: window.http + '/inventory/base_depot_list',
+					arg:{
+						"xstoreId":[],
+					    "xbrandId":'',
+					    "adminId":1,
+					    "brandId":null,
+					    "goodsName":"",
+					    "start":1,
+					    "length":10
+					},
 					columns: [{
-							title: '门店ID',
-							key: 'storeId',
+							title: '品牌名称',
+							key: 'brandName',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '员工名称',
-							key: 'staffName',
+							title: '商品名称',
+							key: 'goodsName',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '会员数量',
-							key: 'memberCount',
+							title: '商品条码',
+							key: 'goodsNumber',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '销售金额',
-							key: 'consumptionSum',
+							title: '库存数量',
+							key: 'countNumber',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '员工',
-							key: 'staffId',
+							title: '所属分公司',
+							key: 'companyName',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '型号',
-							key: 'modelNumber',
+							title: '成本金额',
+							key: 'stockMoney',
 							align: 'center',
 							width: 100
 						},
 						{
-							title: '规格',
-							key: 'spec',
+							title: '售价金额',
+							key: 'sellMoney',
 							align: 'center',
 							width: 100
 						},
+						{
+							title: '日均销量',
+							key: 'daysAvg',
+							align: 'center',
+							width: 100
+						},
+						{
+							title: '可售天数',
+							key: 'sellDay',
+							align: 'center',
+							width: 100
+						}
 					]
 				},
 			}
 
 		},
 		methods: {
+			btn_query(){
+//				this.down_table()
+				if(this.tableInfo.arg.xbrandId!==''){
+					this.tableInfo.arg.brandId = this.tableInfo.arg.xbrandId
+				}else{
+					this.tableInfo.arg.brandId = null
+				}
+				console.log(this.tableInfo.arg)
+				this.down_table()
+			},
+			change_storeId(value, selectedData){
+				console.log(value, selectedData)
+				this.$http({
+					method: 'post',
+					url: window.http + '/promotionGoods/query_brand_storeId',
+					data:{
+					    "storeId":value[value.length-1]
+					}
+				}).then((res) => {
+					console.log(2,res)
+					if(res.data.state == '00000') {
+						this.brandIdList = []
+						this.brandIdList = res.data.data
+					}
+				});
+			},
 			up_groupSend(){
 				this.$http({
 					method: 'post',
@@ -166,24 +218,198 @@
 				this.$http({
 					method: 'post',
 					url: this.tableInfo.url,
-					data:{
-					   "storeId": 16
-					}
+					data:this.tableInfo.arg
 				}).then((res) => {
 					console.log(1,res)
 					if(res.status==200){
 						this.data_table = res.data.data
 						this.total = res.data.recordsTotal
-						this.memberSum = res.data.memberSum
-						this.memberCount = res.data.count
+						this.totalNumber = res.data.totalNumber
+						this.totalCost = res.data.totalCost
 					}
 					
 				});
 
+			},
+			shop_tree(res){
+				
+				//00001
+				let vdata = res.data.data
+				let list1 = []
+				let list2 = []
+				let list3 = []
+				let list4 = []
+				let list5 = []
+				for(let i=0;i<vdata.length;i++){
+					if(vdata[i].storeName){
+						vdata[i].grade += 1
+					}
+					
+					if(vdata[i].grade ==1){}
+					switch(vdata[i].grade){
+						case 1:list1.push(vdata[i])
+							break;
+						case 2:list2.push(vdata[i])
+							break;	
+						case 3:list3.push(vdata[i])
+							break;
+						case 4:list4.push(vdata[i])
+							break;
+						case 5:list5.push(vdata[i])
+							break;
+					}
+				}
+				
+					let arr = [{
+						value : 0,
+						label: '全部',
+						children: []
+					}]
+					
+					for(let i=0;i<list1.length;i++){
+						if(list1[i].storeName){
+							arr[0].children.push({
+								value: list1[i].storeId,
+								label: list1[i].storeName,
+								regionId:list1[i].regionId,
+								children: []
+							})
+						}else{
+							arr[0].children.push({
+								value: list1[i].regionId,
+								label: list1[i].regionName,
+								regionId:list1[i].regionId,
+								children: []
+							})
+						}
+
+						for(let j=0;j<list2.length;j++){
+							if(list2[j].storeName){
+								if(list2[j].regionId == arr[0].children[i].regionId){
+									
+									arr[0].children[i].children.push({
+										value: list2[j].storeId,
+										label: list2[j].storeName,
+										regionId:list2[j].regionId,
+										children: [],
+									})
+								}
+							}else if(list2[j].superiorId == arr[0].children[i].regionId){
+								
+								arr[0].children[i].children.push({
+									value: list2[j].regionId,
+									label: list2[j].regionName,
+									regionId:list2[j].regionId,
+									children: [],
+								})
+							}
+						}
+					}
+					for(let a=0;a<arr.length;a++){
+						for(let b=0;b<arr[a].children.length;b++){
+							for(let c=0;c<arr[a].children[b].children.length;c++){
+								for(let d=0;d<list3.length;d++){
+									
+							if(list3[d].storeName){
+								if(arr[a].children[b].children[c].regionId == list3[d].regionId){
+										
+										arr[a].children[b].children[c].children.push({
+											value: list3[d].storeId,
+											label: list3[d].storeName,
+											regionId:list3[d].regionId,
+											children: [],
+										})
+								}
+							}else if(arr[a].children[b].children[c].regionId == list3[d].superiorId){
+										
+										arr[a].children[b].children[c].children.push({
+											value: list3[d].regionId,
+											label: list3[d].regionName,	
+											regionId:list3[d].regionId,
+											children: [],
+										})
+									}
+									
+								}
+								
+							}
+						}
+					}
+					for(let a=0;a<arr.length;a++){
+						for(let b=0;b<arr[a].children.length;b++){
+							for(let c=0;c<arr[a].children[b].children.length;c++){
+								for(let d=0;d<arr[a].children[b].children[c].children.length;d++){
+									for(let e=0;e<list4.length;e++){
+										if(list4[e].storeName){
+											if(arr[a].children[b].children[c].children[d].regionId == list4[e].regionId){
+											
+												arr[a].children[b].children[c].children[d].children.push({
+													value: list4[e].storeId,
+													label: list4[e].storeName,
+													regionId:list4[e].regionId,
+													children: [],
+												})
+											}
+										}else if(arr[a].children[b].children[c].children[d].regionId == list4[e].superiorId){
+											
+											arr[a].children[b].children[c].children[d].children.push({
+												value: list4[e].regionId,
+												label: list4[e].regionName,
+												regionId:list4[e].regionId,
+												children: [],
+											})
+										}
+										
+									}
+								}
+							}
+						}
+					}
+					for(let a=0;a<arr.length;a++){
+						for(let b=0;b<arr[a].children.length;b++){
+							for(let c=0;c<arr[a].children[b].children.length;c++){
+								for(let d=0;d<arr[a].children[b].children[c].children.length;d++){
+									for(let e=0;e<arr[a].children[b].children[c].children[d].children.length;e++){
+										for(let f=0;f<list5.length;f++){
+											if(list5[f].storeName){
+												if(arr[a].children[b].children[c].children[d].children[e].regionId == list5[f].regionId){
+													arr[a].children[b].children[c].children[d].children[e].children.push({
+														value: list5[f].storeId,
+														label: list5[f].storeName,
+														regionId:list5[f].regionId,
+														children: [],
+													})
+												}
+											}else if(arr[a].children[b].children[c].children[d].children[e].regionId == list5[f].superiorId){
+												arr[a].children[b].children[c].children[d].children[e].children.push({
+													value: list5[f].regionId,
+													label: list5[f].regionName,
+													regionId:list5[f].regionId,
+													children: [],
+												})
+											}
+											
+										}
+									}
+								}
+							}
+						}
+					}
+					this.shopClassifyList = arr
+					console.log('bases',this.shopClassifyList)
 			}
 		},
 		mounted() {
 			this.down_table()
+			this.$http({
+					method: 'post',
+					url: window.http + '/store/region_classfy?userId=1',
+				}).then((res) => {
+					console.log(2,res)
+					if(res.data.state == '00000') {
+						this.shop_tree(res)
+					}
+				});
 		}
 	}
 </script>

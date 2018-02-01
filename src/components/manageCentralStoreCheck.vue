@@ -11,7 +11,7 @@
 			<span>门店管理</span>
 		</div>
 		<div class="main-left">
-			<module-tree :treeInfo="treeInfo"></module-tree>
+			<module-tree :treeInfo="treeInfo" @getStoreId='up_query'></module-tree>
 		</div>
 		<div class="main-right">
 			<div class="serach">
@@ -210,14 +210,14 @@
                 ],
 				modal_edit: false,
 				treeInfo: {
-					url: window.http + '/store/region_classfy?userId=1',
+					url: window.http + '/stock/company_list',
 				},
 				tableInfo: {
 					name: '门店管理',
 					search: 0,
 					url: window.http + '/inventory/store_inventory_check_order',
 					arg:{
-						'storeId':17,
+						'companyId':null,
 						'checkOrder':null,
 						'beginDate':null,
 						'endDate':null,
@@ -377,6 +377,12 @@
 			}
 		},
 		methods: {
+			up_query(obj){
+				if(obj.length>0){
+					this.tableInfo.arg.companyId = obj[0].companyId
+				}
+				this.down_table()
+			},
 			show_detail(id){
 				this.modal_detail = true
 				this.$http({
@@ -446,6 +452,10 @@
         		this.show_detail()
         	},
 			down_table(){
+				if(!this.tableInfo.arg.companyId){
+					this.$Message.info('请在左侧选择分公司！')
+					return;
+				}
 				this.$http({
 					method: 'post',
 					url: this.tableInfo.url,
@@ -454,18 +464,8 @@
 					console.log(res)
 					if(res.status==200){
 						
-						if(this.tableInfo.name == "员工管理"){
-							this.data_table = res.data.data.list
-							this.total = res.data.total
-						}else{
 							this.data_table = res.data.data
 							this.total = res.data.recordsTotal
-						}
-						console.log('tableData',res.data.data)
-						if(this.tableInfo.name == "巡店查询"){
-							this.countYes = res.data.countYes
-							this.countNo = res.data.countNo
-						}
 					}
 					
 				});

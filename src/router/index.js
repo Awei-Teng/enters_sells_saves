@@ -53,6 +53,7 @@ const manageShopStoreCheck = () => import(/* webpackChunkName: "group-foo" */ '.
 const manageWage = () => import(/* webpackChunkName: "group-foo" */ '../components/manageWage.vue')
 const manageWage2 = () => import(/* webpackChunkName: "group-foo" */ '../components/manageWage2.vue')
 const manageWageSearch = () => import(/* webpackChunkName: "group-foo" */ '../components/manageWageSearch.vue')
+const manageCentralStoreCheck = () => import(/* webpackChunkName: "group-foo" */ '../components/manageCentralStoreCheck.vue')
 Vue.use(Router)
 const routes = [
  	  {
@@ -110,7 +111,8 @@ const routes = [
 					        manageShopStoreCheck:manageShopStoreCheck,
 					        manageWage:manageWage,
 					        manageWage2:manageWage2,
-					        manageWageSearch:manageWageSearch
+					        manageWageSearch:manageWageSearch,
+					        manageCentralStoreCheck:manageCentralStoreCheck
 					    }
 				}
 			]

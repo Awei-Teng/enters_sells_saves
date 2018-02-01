@@ -38,18 +38,37 @@
 				method: 'post',
 				url: this.treeInfo.url,
 			}).then((res)=> {
-				console.log(res)
-				if(res.data.state=="00000"){
+				console.log(this.treeInfo.url,res)
+				if(res.data.state=="00000" || res.status ==200){
 					if(this.treeInfo.url.indexOf('region_classfy')!=-1){
 						this.shop_tree(res)
 					}else if(this.treeInfo.url.indexOf('classify')!=-1){
 						this.goods_tree(res)
+					}else if(this.treeInfo.url.indexOf('company_list')!=-1){
+						this.company_tree(res)
 					}
 					
 				}
 			});
 		},
 		methods: {
+			company_tree(res){
+				let data = res.data
+				console.log(res,12)
+				this.baseData = [{
+                        title: '全部',
+                        expand: true,
+                        children: []
+                    }]
+                    
+				data.map((item)=>{
+					this.baseData[0].children.push({
+                        title: item.companyName,
+                        companyId: item.companyId,
+                        expand: true,
+                    })
+				})
+			},
 			shop_tree(res){
 				
 				//00001

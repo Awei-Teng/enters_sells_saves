@@ -244,6 +244,8 @@
 						break;
 					case '11-3':this.vRouter = 'manageCentralStore'
 						break;
+					case '11-4':this.vRouter = 'manageCentralStoreCheck'
+						break;
 					case '13-1':this.vRouter = 'manageWage'
 						break;
 					case '13-2':this.vRouter = 'manageWage2'
