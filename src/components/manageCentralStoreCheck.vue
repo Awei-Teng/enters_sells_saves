@@ -194,7 +194,8 @@
                     {
                         value: 1,
                         label: '私营'
-                    },{
+                    },
+                    {
                         value: 2,
                         label: '联营'
                     }
